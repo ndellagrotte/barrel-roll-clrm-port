@@ -37,4 +37,12 @@ public abstract class EntityMixin implements RollEntity {
     @Override
     public void doABarrelRoll$setRoll(float roll) {
     }
+
+    @Override
+    public void doABarrelRoll$tickRoll() {
+    }
+
+    @Override
+    public void doABarrelRoll$tickRollState() {
+    }
 }

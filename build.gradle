@@ -57,7 +57,7 @@ unimined.minecraft {
         if (use_access_transformer.toBoolean()) {
             accessTransformer "${rootProject.projectDir}/src/main/resources/$access_transformer_locations"
         }
-        loader "0.5.17-alpha"
+        loader "0.6.6-alpha"
         runs.all {
             systemProperty("crl.dev.mixin", mixin_configs)
             args += ['--username', minecraft_username]

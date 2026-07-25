@@ -1,10 +1,10 @@
 package io.github.ndellagrotte.doabarrelroll.mixin;
 
 import io.github.ndellagrotte.doabarrelroll.DoABarrelRoll;
+import io.github.ndellagrotte.doabarrelroll.api.RollEntity;
 import net.minecraft.entity.player.EntityPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EntityPlayer.class)
 public abstract class PlayerEntityMixin extends LivingEntityMixin {
@@ -16,18 +16,14 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
     protected float roll;
 
     @Override
-    protected void doABarrelRoll$onUpdateTail(CallbackInfo ci) {
-        doABarrelRoll$tickRollState();
+    public void doABarrelRoll$tickRoll() {
+        ((RollEntity) (Object) this).doABarrelRoll$tickRollState();
 
         prevRoll = doABarrelRoll$getRoll();
 
         if (!doABarrelRoll$isRolling()) {
             doABarrelRoll$setRoll(0.0f);
         }
-    }
-
-    @Unique
-    protected void doABarrelRoll$tickRollState() {
     }
 
     @Override
