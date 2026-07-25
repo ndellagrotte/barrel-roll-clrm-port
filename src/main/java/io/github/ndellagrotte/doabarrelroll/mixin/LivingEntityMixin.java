@@ -10,10 +10,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(EntityLivingBase.class)
 public abstract class LivingEntityMixin extends EntityMixin {
     /**
-     * The handler body must not carry the per-subclass behaviour itself. Dispatching to it happens
-     * through {@link RollEntity}, cast via {@code Object} so javac emits INVOKEINTERFACE - see
-     * {@link RollEntity#doABarrelRoll$tickRoll()} for why a plain override does not survive
-     * Cleanroom 0.6.x.
+     * This handler must stay behaviour-free: overriding an <em>injector handler</em> in a child
+     * mixin does not work on Cleanroom 0.6.x. Per-subclass behaviour is reached through
+     * {@link RollEntity}, cast via {@code Object} so javac emits INVOKEINTERFACE - see
+     * {@link RollEntity#doABarrelRoll$tickRoll()}.
      */
     @Inject(
             method = "onUpdate",
