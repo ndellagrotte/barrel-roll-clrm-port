@@ -59,10 +59,11 @@ unimined.minecraft {
         }
         loader "0.5.17-alpha"
         runs.all {
+            systemProperty("crl.dev.mixin", mixin_configs)
             args += ['--username', minecraft_username]
             def extraArgs = extra_jvm_args
             if (extraArgs != null && !extraArgs.trim().isEmpty()) {
-                jvmArgs += extraArgs.split { "\\s+" }.toList()
+                jvmArgs += extraArgs.trim().split(/\s+/).toList()
             }
             if (enable_foundation_debug.toBoolean()) {
                 systemProperty("foundation.dump", "true")
@@ -79,7 +80,12 @@ unimined.minecraft {
 
     String jarTaskName = enable_shadow.toBoolean() ? "shadowJar" : "jar"
 
-    remap(tasks.named(jarTaskName).get())
+    remap(tasks.named(jarTaskName).get()) {
+        mixinRemap {
+            enableBaseMixin()
+            enableMixinExtra()
+        }
+    }
 
     mods {
         remap(configurations.modCompileOnly)
@@ -110,7 +116,7 @@ sourceSets {
                 property('mod_id', mod_id)
                 property('mod_name', mod_name)
                 property('mod_version', mod_version)
-                property('package', "${root_package}.${mod_id}")
+                property('package', java_package)
             }
             resources {
                 property('mod_id', mod_id)
@@ -191,6 +197,9 @@ jar {
             }
             if (use_access_transformer.toBoolean()) {
                 attribute_map['FMLAT'] = access_transformer_locations
+            }
+            if (mixin_configs != null && !mixin_configs.toString().trim().isEmpty()) {
+                attribute_map['MixinConfigs'] = mixin_configs
             }
             attributes(attribute_map)
         }
