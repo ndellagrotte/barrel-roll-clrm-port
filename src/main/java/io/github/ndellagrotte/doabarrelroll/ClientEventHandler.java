@@ -27,7 +27,10 @@ public class ClientEventHandler {
             rollBack -= rollBack * 0.5f;
         }
 
-        EventCallbacksClient.clientTick(mc);
+        if (!DoABarrelRollClient.isFallFlying()) {
+            DoABarrelRollClient.clearValues();
+        }
+        ModKeybindings.clientTick(mc);
     }
 
     /**

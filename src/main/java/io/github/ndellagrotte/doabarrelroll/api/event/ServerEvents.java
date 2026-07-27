@@ -1,19 +1,40 @@
 package io.github.ndellagrotte.doabarrelroll.api.event;
 
-import net.minecraft.server.MinecraftServer;
 import io.github.ndellagrotte.doabarrelroll.config.ModConfigServer;
-import io.github.ndellagrotte.doabarrelroll.impl.event.EventImpl;
+import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.eventhandler.Event;
 
-public interface ServerEvents {
-    Event<ServerConfigUpdateEvent> SERVER_CONFIG_UPDATE = new EventImpl<>();
-
-    interface ServerConfigUpdateEvent {
-        void updateServerConfig(MinecraftServer server, ModConfigServer config);
+public final class ServerEvents {
+    private ServerEvents() {
     }
 
-    static void updateServerConfig(MinecraftServer server, ModConfigServer config) {
-        for (var listener : SERVER_CONFIG_UPDATE.getListeners()) {
-            listener.updateServerConfig(server, config);
+    public static void updateServerConfig(MinecraftServer server, ModConfigServer config) {
+        MinecraftForge.EVENT_BUS.post(new ServerConfigUpdateEvent(server, config));
+    }
+
+    public static final class ServerConfigUpdateEvent extends Event {
+        private final MinecraftServer server;
+        private final ModConfigServer config;
+
+        /**
+         * Used by Forge 1.12.2 while discovering subscribers.
+         */
+        public ServerConfigUpdateEvent() {
+            this(null, null);
+        }
+
+        public ServerConfigUpdateEvent(MinecraftServer server, ModConfigServer config) {
+            this.server = server;
+            this.config = config;
+        }
+
+        public MinecraftServer getServer() {
+            return server;
+        }
+
+        public ModConfigServer getConfig() {
+            return config;
         }
     }
 }

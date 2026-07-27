@@ -1,50 +1,95 @@
 package io.github.ndellagrotte.doabarrelroll.api.event;
 
-import io.github.ndellagrotte.doabarrelroll.impl.event.EventImpl;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.eventhandler.Event;
 
-public interface RollEvents {
-    /**
-     * If any listener returns true, roll will be unlocked.
-     */
-    Event<ShouldRollCheckEvent> SHOULD_ROLL_CHECK = new EventImpl<>();
-
-    interface ShouldRollCheckEvent {
-        boolean shouldRoll();
-    }
-
-    static boolean shouldRoll() {
-        for (var listener : SHOULD_ROLL_CHECK.getListeners()) {
-            if (listener.shouldRoll()) {
-                return true;
-            }
-        }
-
-        return false;
+public final class RollEvents {
+    private RollEvents() {
     }
 
     /**
-     * Modifiers registered here will be applied <b>before</b> sensitivity. So will be affected by it.
+     * Posts a roll check. If any subscriber unlocks the event, roll will be enabled.
      */
-    Event<CameraModifiersEvent> EARLY_CAMERA_MODIFIERS = new EventImpl<>();
-
-    static void earlyCameraModifiers(RollContext context) {
-        for (var listener : EARLY_CAMERA_MODIFIERS.getListeners()) {
-            listener.applyCameraModifiers(context);
-        }
+    public static boolean shouldRoll() {
+        ShouldRollCheckEvent event = new ShouldRollCheckEvent();
+        MinecraftForge.EVENT_BUS.post(event);
+        return event.shouldRoll();
     }
 
     /**
-     * Modifiers registered here will be applied <b>after</b> sensitivity. So will not be affected by it.
+     * Posts camera modifiers that run <b>before</b> sensitivity and are therefore affected by it.
      */
-    Event<CameraModifiersEvent> LATE_CAMERA_MODIFIERS = new EventImpl<>();
+    public static void earlyCameraModifiers(RollContext context) {
+        MinecraftForge.EVENT_BUS.post(new EarlyCameraModifiersEvent(context));
+    }
 
-    static void lateCameraModifiers(RollContext context) {
-        for (var listener : LATE_CAMERA_MODIFIERS.getListeners()) {
-            listener.applyCameraModifiers(context);
+    /**
+     * Posts camera modifiers that run <b>after</b> sensitivity and are therefore not affected by it.
+     */
+    public static void lateCameraModifiers(RollContext context) {
+        MinecraftForge.EVENT_BUS.post(new LateCameraModifiersEvent(context));
+    }
+
+    /**
+     * Forge event used to determine whether the local player's camera may roll.
+     *
+     * <p>Subscribers should call {@link #unlock()} when their condition is met. Unlocking is
+     * intentionally one-way so a later subscriber cannot override an earlier positive result.
+     */
+    public static final class ShouldRollCheckEvent extends Event {
+        private boolean shouldRoll;
+
+        public boolean shouldRoll() {
+            return shouldRoll;
+        }
+
+        public void unlock() {
+            shouldRoll = true;
         }
     }
 
-    interface CameraModifiersEvent {
-        void applyCameraModifiers(RollContext context);
+    public static class CameraModifiersEvent extends Event {
+        private final RollContext context;
+
+        /**
+         * Used by Forge 1.12.2 while discovering subscribers.
+         */
+        public CameraModifiersEvent() {
+            this(null);
+        }
+
+        protected CameraModifiersEvent(RollContext context) {
+            this.context = context;
+        }
+
+        public RollContext getContext() {
+            return context;
+        }
+    }
+
+    public static final class EarlyCameraModifiersEvent extends CameraModifiersEvent {
+        /**
+         * Used by Forge 1.12.2 while discovering subscribers.
+         */
+        public EarlyCameraModifiersEvent() {
+            super();
+        }
+
+        public EarlyCameraModifiersEvent(RollContext context) {
+            super(context);
+        }
+    }
+
+    public static final class LateCameraModifiersEvent extends CameraModifiersEvent {
+        /**
+         * Used by Forge 1.12.2 while discovering subscribers.
+         */
+        public LateCameraModifiersEvent() {
+            super();
+        }
+
+        public LateCameraModifiersEvent(RollContext context) {
+            super(context);
+        }
     }
 }
