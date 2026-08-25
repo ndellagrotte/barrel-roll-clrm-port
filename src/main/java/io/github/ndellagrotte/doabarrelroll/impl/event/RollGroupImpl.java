@@ -88,7 +88,7 @@ public class RollGroupImpl implements RollGroup {
     @Override
     public Boolean get() {
         for (RollCondition condition : getConditions()) {
-            var result = condition.shouldRoll();
+            TriState result = condition.shouldRoll();
             if (result != TriState.PASS) {
                 return result == TriState.TRUE;
             }

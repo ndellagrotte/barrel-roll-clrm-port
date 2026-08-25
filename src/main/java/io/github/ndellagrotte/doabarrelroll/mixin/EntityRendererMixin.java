@@ -60,7 +60,7 @@ public abstract class EntityRendererMixin implements RollMouse {
 
     @Override
     public boolean doABarrelRoll$updateMouse(EntityPlayerSP player, double cursorDeltaX, double cursorDeltaY, double mouseDelta) {
-        var rollPlayer = (RollEntity) player;
+        RollEntity rollPlayer = (RollEntity) player;
 
         // 1.12.2 hands us the pitch argument of Entity.turn, which is *subtracted* from
         // rotationPitch and comes from LWJGL's bottom-up Mouse.getDY. Upstream's cursorDeltaY is
@@ -78,7 +78,7 @@ public abstract class EntityRendererMixin implements RollMouse {
                 if (mouseTurnVec.lengthSquared() > 1.0) {
                     mouseTurnVec.normalize();
                 }
-                var readyTurnVec = new Vector2d(mouseTurnVec);
+                Vector2d readyTurnVec = new Vector2d(mouseTurnVec);
 
                 // check if the vector is within the deadzone
                 double deadzone = ModConfig.INSTANCE.getMomentumMouseDeadzone();

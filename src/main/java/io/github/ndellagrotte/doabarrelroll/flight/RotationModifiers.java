@@ -9,9 +9,11 @@ import io.github.ndellagrotte.doabarrelroll.api.event.RollContext;
 import io.github.ndellagrotte.doabarrelroll.api.rotation.RotationInstant;
 import io.github.ndellagrotte.doabarrelroll.config.ModConfig;
 import io.github.ndellagrotte.doabarrelroll.config.Sensitivity;
+import io.github.ndellagrotte.doabarrelroll.math.Expression;
 import io.github.ndellagrotte.doabarrelroll.math.MagicNumbers;
 import io.github.ndellagrotte.doabarrelroll.math.Smoother;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.math.Vec3d;
 
 public class RotationModifiers {
@@ -19,10 +21,10 @@ public class RotationModifiers {
 
     public static RollContext.ConfiguresRotation buttonControls(double power) {
         return (rotationInstant, context) -> {
-            var delta = power * context.getRenderDelta();
-            var pitch = 0.0;
-            var yaw = 0.0;
-            var roll = 0.0;
+            double delta = power * context.getRenderDelta();
+            double pitch = 0.0;
+            double yaw = 0.0;
+            double roll = 0.0;
 
             if (ModKeybindings.PITCH_UP.isKeyDown()) {
                 pitch -= delta;
@@ -50,7 +52,7 @@ public class RotationModifiers {
 
     public static RollContext.ConfiguresRotation smoothing(Smoother pitchSmoother, Smoother yawSmoother, Smoother rollSmoother, Sensitivity smoothness) {
         return (rotationInstant, context) -> {
-            var delta = context.getRenderDelta();
+            double delta = context.getRenderDelta();
             return RotationInstant.of(
                     smoothness.pitch == 0 ? rotationInstant.pitch() : pitchSmoother.smooth(rotationInstant.pitch(), 1 / smoothness.pitch * delta, delta),
                     smoothness.yaw == 0 ? rotationInstant.yaw() : yawSmoother.smooth(rotationInstant.yaw(), 1 / smoothness.yaw * delta, delta),
@@ -60,18 +62,18 @@ public class RotationModifiers {
     }
 
     public static RotationInstant banking(RotationInstant rotationInstant, RollContext context) {
-        var delta = context.getRenderDelta();
-        var currentRotation = context.getCurrentRotation();
-        var currentRoll = currentRotation.roll() * MagicNumbers.TORAD;
+        double delta = context.getRenderDelta();
+        RotationInstant currentRotation = context.getCurrentRotation();
+        double currentRoll = currentRotation.roll() * MagicNumbers.TORAD;
 
-        var xExpression = ModConfig.INSTANCE.getBankingXFormula().getCompiledOrDefaulting(0);
-        var yExpression = ModConfig.INSTANCE.getBankingYFormula().getCompiledOrDefaulting(0);
+        Expression xExpression = ModConfig.INSTANCE.getBankingXFormula().getCompiledOrDefaulting(0);
+        Expression yExpression = ModConfig.INSTANCE.getBankingYFormula().getCompiledOrDefaulting(0);
 
-        var vars = getVars(context);
+        Map<String, Double> vars = getVars(context);
         vars.put("banking_strength", ModConfig.INSTANCE.getBankingStrength());
 
-        var dX = xExpression.eval(vars);
-        var dY = yExpression.eval(vars);
+        double dX = xExpression.eval(vars);
+        double dY = yExpression.eval(vars);
 
         // check if we accidentally got NaN, for some reason this happens sometimes
         if (Double.isNaN(dX)) dX = 0;
@@ -81,11 +83,11 @@ public class RotationModifiers {
     }
 
     public static RotationInstant reorient(RotationInstant rotationInstant, RollContext context) {
-        var delta = context.getRenderDelta();
-        var currentRoll = context.getCurrentRotation().roll() * MagicNumbers.TORAD;
-        var strength = 10 * ModConfig.INSTANCE.getRightingStrength();
+        double delta = context.getRenderDelta();
+        double currentRoll = context.getCurrentRotation().roll() * MagicNumbers.TORAD;
+        double strength = 10 * ModConfig.INSTANCE.getRightingStrength();
 
-        var cutoff = ROLL_REORIENT_CUTOFF;
+        double cutoff = ROLL_REORIENT_CUTOFF;
         double rollDelta = 0;
         if (-cutoff < currentRoll && currentRoll < cutoff) {
             rollDelta = -Math.pow(currentRoll, 3) / 3.0 + currentRoll; //0.1 * Math.pow(currentRoll, 5);
@@ -113,22 +115,22 @@ public class RotationModifiers {
     }
 
     public static RotationInstant applyControlSurfaceEfficacy(RotationInstant rotationInstant, RollContext context) {
-        var elevatorExpression = ModConfig.INSTANCE.getElevatorEfficacyFormula().getCompiledOrDefaulting(1);
-        var aileronExpression = ModConfig.INSTANCE.getAileronEfficacyFormula().getCompiledOrDefaulting(1);
-        var rudderExpression = ModConfig.INSTANCE.getRudderEfficacyFormula().getCompiledOrDefaulting(1);
+        Expression elevatorExpression = ModConfig.INSTANCE.getElevatorEfficacyFormula().getCompiledOrDefaulting(1);
+        Expression aileronExpression = ModConfig.INSTANCE.getAileronEfficacyFormula().getCompiledOrDefaulting(1);
+        Expression rudderExpression = ModConfig.INSTANCE.getRudderEfficacyFormula().getCompiledOrDefaulting(1);
 
-        var vars = getVars(context);
+        Map<String, Double> vars = getVars(context);
         return rotationInstant.multiply(elevatorExpression.eval(vars), rudderExpression.eval(vars), aileronExpression.eval(vars));
     }
 
     private static Map<String, Double> getVars(RollContext context) {
-        var player = Minecraft.getMinecraft().player;
+        EntityPlayerSP player = Minecraft.getMinecraft().player;
         assert player != null;
 
-        var currentRotation = context.getCurrentRotation();
-        var rotationVector = player.getLook(1.0F);
-        var velocity = new Vec3d(player.motionX, player.motionY, player.motionZ);
-        return new HashMap<>() {{
+        RotationInstant currentRotation = context.getCurrentRotation();
+        Vec3d rotationVector = player.getLook(1.0F);
+        Vec3d velocity = new Vec3d(player.motionX, player.motionY, player.motionZ);
+        return new HashMap<String, Double>() {{
             put("pitch", currentRotation.pitch());
             put("yaw", currentRotation.yaw());
             put("roll", currentRotation.roll());

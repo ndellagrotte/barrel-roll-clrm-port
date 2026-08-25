@@ -5,7 +5,37 @@ import io.github.ndellagrotte.doabarrelroll.config.Sensitivity;
 
 import java.util.function.BooleanSupplier;
 
-public record RotationInstantImpl(double pitch, double yaw, double roll) implements RotationInstant {
+/**
+ * Hand-written stand-in for a record: this targets Java 8 bytecode so it runs on MinecraftForge
+ * 1.12.2 as well as Cleanroom. The accessor names ({@code pitch()}/{@code yaw()}/{@code roll()})
+ * match the record shape that {@link RotationInstant} declares, so callers are unaffected.
+ */
+public final class RotationInstantImpl implements RotationInstant {
+    private final double pitch;
+    private final double yaw;
+    private final double roll;
+
+    public RotationInstantImpl(double pitch, double yaw, double roll) {
+        this.pitch = pitch;
+        this.yaw = yaw;
+        this.roll = roll;
+    }
+
+    @Override
+    public double pitch() {
+        return pitch;
+    }
+
+    @Override
+    public double yaw() {
+        return yaw;
+    }
+
+    @Override
+    public double roll() {
+        return roll;
+    }
+
     @Override
     public RotationInstant add(double pitch, double yaw, double roll) {
         return new RotationInstantImpl(this.pitch + pitch, this.yaw + yaw, this.roll + roll);

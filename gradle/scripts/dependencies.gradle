@@ -1,6 +1,10 @@
 repositories {
-    // Other repositories described by default:
-    // CleanroomMC: https://maven.cleanroommc.com
+    // Declared explicitly: the `cleanroom` unimined patcher used to inject this repo implicitly, but
+    // the build now uses `minecraftForge`, which does not. MixinBooter is published here.
+    maven {
+        name = 'CleanroomMC'
+        url = 'https://maven.cleanroommc.com'
+    }
     maven {
         name = 'CurseMaven'
         url = 'https://cursemaven.com'
@@ -18,7 +22,15 @@ repositories {
 }
 
 dependencies {
-    compileOnly "com.cleanroommc:sponge-mixin:0.20.13+mixin.0.8.7"
+    // MixinBooter is a fat jar: it carries the whole org.spongepowered.asm.* Mixin implementation
+    // (CleanMix 0.6.0, i.e. Mixin 0.8.7) *and* zone.rong.mixinbooter.IEarlyMixinLoader. One dependency
+    // therefore covers both the mixin annotations we compile against and the config-registration hook.
+    // compileOnly because the loader provides it at runtime: Cleanroom bundles MixinBooter as a
+    // built-in mod, and on Forge the user installs it (declared required-after:mixinbooter).
+    compileOnly "zone.rong:mixinbooter:${mixinbooter_version}"
+    // ...and on the classpath for the Forge dev run, where nothing else supplies Mixin.
+    runtimeOnly "zone.rong:mixinbooter:${mixinbooter_version}"
+
     if (enable_lwjglx.toBoolean()) {
         compileOnly "com.cleanroommc:lwjglx:1.0.0"
     }

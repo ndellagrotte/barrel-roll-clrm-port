@@ -11,6 +11,7 @@ import io.github.ndellagrotte.doabarrelroll.math.Smoother;
 import io.github.ndellagrotte.doabarrelroll.net.ClientNetworking;
 import io.github.ndellagrotte.doabarrelroll.util.MixinHooks;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -76,7 +77,7 @@ public class DoABarrelRollClient {
 
     public static boolean isFallFlying() {
         if (!ClientNetworking.HANDSHAKE_CLIENT.getConfig().map(LimitedModConfigServer::forceEnabled).orElse(false)) {
-            var hybrid = ModConfig.INSTANCE.getActivationBehaviour() == ActivationBehaviour.HYBRID ||
+            boolean hybrid = ModConfig.INSTANCE.getActivationBehaviour() == ActivationBehaviour.HYBRID ||
                     ModConfig.INSTANCE.getActivationBehaviour() == ActivationBehaviour.HYBRID_TOGGLE;
             if (hybrid && !MixinHooks.thirdJump) {
                 return false;
@@ -87,7 +88,7 @@ public class DoABarrelRollClient {
             }
         }
 
-        var player = Minecraft.getMinecraft().player;
+        EntityPlayerSP player = Minecraft.getMinecraft().player;
         if (player == null) {
             return false;
         }

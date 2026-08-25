@@ -23,7 +23,7 @@ public interface LimitedModConfigServer {
     }
 
     default JsonObject toJson() {
-        var json = new JsonObject();
+        JsonObject json = new JsonObject();
         json.addProperty("allowThrusting", allowThrusting());
         json.addProperty("forceEnabled", forceEnabled());
         return json;
@@ -33,6 +33,24 @@ public interface LimitedModConfigServer {
 
     boolean forceEnabled();
 
-    record Impl(boolean allowThrusting, boolean forceEnabled) implements LimitedModConfigServer {
+    /** Hand-written stand-in for a record; the mod targets Java 8 bytecode for MinecraftForge. */
+    final class Impl implements LimitedModConfigServer {
+        private final boolean allowThrusting;
+        private final boolean forceEnabled;
+
+        public Impl(boolean allowThrusting, boolean forceEnabled) {
+            this.allowThrusting = allowThrusting;
+            this.forceEnabled = forceEnabled;
+        }
+
+        @Override
+        public boolean allowThrusting() {
+            return allowThrusting;
+        }
+
+        @Override
+        public boolean forceEnabled() {
+            return forceEnabled;
+        }
     }
 }

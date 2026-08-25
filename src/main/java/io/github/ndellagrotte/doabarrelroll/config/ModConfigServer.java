@@ -9,11 +9,52 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.PacketBuffer;
 
-public record ModConfigServer(boolean allowThrusting,
-                              boolean forceEnabled,
-                              boolean forceInstalled,
-                              int installedTimeout,
-                              KineticDamage kineticDamage) implements SyncableConfig<ModConfigServer, LimitedModConfigServer>, LimitedModConfigServer, ValidatableConfig {
+/**
+ * Hand-written stand-in for a record, so the mod compiles to Java 8 bytecode and loads on
+ * MinecraftForge 1.12.2 as well as Cleanroom. Field names and accessor names are kept identical to
+ * the record components, because callers use both forms.
+ */
+public final class ModConfigServer implements SyncableConfig<ModConfigServer, LimitedModConfigServer>, LimitedModConfigServer, ValidatableConfig {
+    private final boolean allowThrusting;
+    private final boolean forceEnabled;
+    private final boolean forceInstalled;
+    private final int installedTimeout;
+    private final KineticDamage kineticDamage;
+
+    public ModConfigServer(boolean allowThrusting,
+                           boolean forceEnabled,
+                           boolean forceInstalled,
+                           int installedTimeout,
+                           KineticDamage kineticDamage) {
+        this.allowThrusting = allowThrusting;
+        this.forceEnabled = forceEnabled;
+        this.forceInstalled = forceInstalled;
+        this.installedTimeout = installedTimeout;
+        this.kineticDamage = kineticDamage;
+    }
+
+    @Override
+    public boolean allowThrusting() {
+        return allowThrusting;
+    }
+
+    @Override
+    public boolean forceEnabled() {
+        return forceEnabled;
+    }
+
+    public boolean forceInstalled() {
+        return forceInstalled;
+    }
+
+    public int installedTimeout() {
+        return installedTimeout;
+    }
+
+    public KineticDamage kineticDamage() {
+        return kineticDamage;
+    }
+
     public static final ModConfigServer DEFAULT = new ModConfigServer(
             false, false, false, 40, KineticDamage.VANILLA);
 
@@ -28,7 +69,7 @@ public record ModConfigServer(boolean allowThrusting,
     }
 
     public JsonObject toJson() {
-        var json = new JsonObject();
+        JsonObject json = new JsonObject();
         json.addProperty("allowThrusting", allowThrusting);
         json.addProperty("forceEnabled", forceEnabled);
         json.addProperty("forceInstalled", forceInstalled);

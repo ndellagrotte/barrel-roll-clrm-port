@@ -10,6 +10,8 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import org.lwjgl.input.Keyboard;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ModKeybindings {
@@ -84,7 +86,7 @@ public class ModKeybindings {
             CATEGORY_MOVEMENT
     );
 
-    public static final List<KeyBinding> ALL = List.of(
+    public static final List<KeyBinding> ALL = Collections.unmodifiableList(Arrays.asList(
             TOGGLE_ENABLED,
             TOGGLE_THRUST,
             OPEN_CONFIG,
@@ -96,7 +98,7 @@ public class ModKeybindings {
             ROLL_RIGHT,
             THRUST_FORWARD,
             THRUST_BACKWARD
-    );
+    ));
 
     public static void clientTick(Minecraft client) {
         while (TOGGLE_ENABLED.isPressed()) {

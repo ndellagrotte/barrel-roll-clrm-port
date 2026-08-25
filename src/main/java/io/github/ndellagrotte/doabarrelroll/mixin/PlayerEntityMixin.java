@@ -55,7 +55,7 @@ public abstract class PlayerEntityMixin extends LivingEntityMixin {
             DoABarrelRoll.LOGGER.warn("Invalid entity rotation: {}, discarding.", roll);
             return;
         }
-        var lastRoll = doABarrelRoll$getRoll();
+        float lastRoll = doABarrelRoll$getRoll();
         this.roll = roll;
 
         if (roll < -90 && lastRoll > 90) {

@@ -33,7 +33,7 @@ public class ModConfig {
 
     private void performMigrations() {
         if (format_version_do_not_edit <= 1) { // configs below format version 1 use old smoothing values
-            var enabled = sensitivity.smoothing.smoothing_enabled;
+            boolean enabled = sensitivity.smoothing.smoothing_enabled;
             sensitivity.camera_smoothing.pitch = enabled ? 1 / sensitivity.smoothing.smoothing_pitch : 0;
             sensitivity.camera_smoothing.yaw = enabled ? 1 / sensitivity.smoothing.smoothing_yaw : 0;
             sensitivity.camera_smoothing.roll = enabled ? 1 / sensitivity.smoothing.smoothing_roll : 0;
@@ -419,12 +419,12 @@ public class ModConfig {
     }
 
     public RotationInstant configureRotation(RotationInstant rotationInstant, RollContext context) {
-        var pitch = rotationInstant.pitch();
-        var yaw = rotationInstant.yaw();
-        var roll = rotationInstant.roll();
+        double pitch = rotationInstant.pitch();
+        double yaw = rotationInstant.yaw();
+        double roll = rotationInstant.roll();
 
         if (!getSwitchRollAndYaw()) {
-            var temp = yaw;
+            double temp = yaw;
             yaw = roll;
             roll = temp;
         }

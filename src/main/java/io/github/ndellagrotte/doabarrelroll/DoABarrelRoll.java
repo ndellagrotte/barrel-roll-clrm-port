@@ -16,7 +16,10 @@ import org.apache.logging.log4j.Logger;
  * Cleanroom 1.12.2 port of "Do a Barrel Roll" by enjarai.
  * Original mod: https://github.com/enjarai/do-a-barrel-roll (GPL-3.0)
  */
-@Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.VERSION, acceptedMinecraftVersions = "[1.12.2]")
+// MixinBooter supplies Mixin on vanilla MinecraftForge and is a built-in mod on Cleanroom, so this
+// dependency resolves on both loaders.
+@Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.VERSION,
+        acceptedMinecraftVersions = "[1.12.2]", dependencies = "required-after:mixinbooter")
 public class DoABarrelRoll {
 
     public static final String MODID = Reference.MOD_ID;

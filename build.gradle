@@ -53,24 +53,28 @@ unimined.minecraft {
         mcp("stable", "39-1.12")
     }
 
-    cleanroom {
+    // Built against vanilla MinecraftForge on purpose, even though the jar also targets Cleanroom.
+    // Cleanroom is a superset of Forge (it adds default methods to IFMLLoadingPlugin, ships
+    // MixinBooter/CleanMix, etc.), so compiling against plain Forge is the lowest common denominator:
+    // any accidental use of a Cleanroom-only API becomes a compile error instead of a crash that only
+    // reproduces on Forge. Do NOT switch this back to `cleanroom { }` — that is what allowed the
+    // empty `implements IFMLLoadingPlugin` coremod to compile and silently break the Forge path.
+    minecraftForge {
         if (use_access_transformer.toBoolean()) {
             accessTransformer "${rootProject.projectDir}/src/main/resources/$access_transformer_locations"
         }
-        loader "0.6.6-alpha"
+        loader forge_version
         runs.all {
-            systemProperty("crl.dev.mixin", mixin_configs)
             args += ['--username', minecraft_username]
             def extraArgs = extra_jvm_args
             if (extraArgs != null && !extraArgs.trim().isEmpty()) {
                 jvmArgs += extraArgs.trim().split(/\s+/).toList()
             }
-            if (enable_foundation_debug.toBoolean()) {
-                systemProperty("foundation.dump", "true")
-                systemProperty("foundation.verbose", "true")
-            }
+            // MixinBooter bootstraps Mixin on vanilla Forge and scans coremods for IEarlyMixinLoader;
+            // it must load as a coremod before ours so the mixin service exists when we register.
             if (is_coremod.toBoolean()) {
-                systemProperty("fml.coreMods.load", coremod_plugin_class_name)
+                systemProperty("fml.coreMods.load",
+                        "zone.rong.mixinbooter.MixinBooterPlugin,$coremod_plugin_class_name")
             }
             return
         }
@@ -169,8 +173,11 @@ if (!enable_shadow.toBoolean()) {
     shadowJar.enabled = false
 }
 
+// The toolchain stays on 25 (that is the JDK Gradle and javac run on), but the emitted bytecode must
+// be Java 8: MinecraftForge 1.12.2 runs on a Java 8 JVM and cannot load anything newer. Cleanroom
+// (Java 21+) loads Java 8 bytecode happily, so one artifact serves both loaders.
 compileJava {
-    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_25
+    options.release = 8
 }
 
 jar {
@@ -184,7 +191,8 @@ jar {
     doFirst {
         manifest {
             def attribute_map = [:]
-            attribute_map['ModType'] = "CRL"
+            // No ModType=CRL: that attribute is only read by Cleanroom's mod discoverer, and this jar
+            // is a plain Forge coremod so that both loaders discover it the same way.
             if (configurations.contain.size() > 0) {
                 attribute_map['ContainedDeps'] = configurations.contain.collect { it.name }.join(' ')
                 attribute_map['NonModDeps'] = true
@@ -198,9 +206,10 @@ jar {
             if (use_access_transformer.toBoolean()) {
                 attribute_map['FMLAT'] = access_transformer_locations
             }
-            if (mixin_configs != null && !mixin_configs.toString().trim().isEmpty()) {
-                attribute_map['MixinConfigs'] = mixin_configs
-            }
+            // Deliberately no MixinConfigs attribute. The config is registered by
+            // DoABarrelRollCore#getMixinConfigs (MixinBooter's IEarlyMixinLoader), which is honoured
+            // by both MixinBooter on Forge and CleanMixHooks on Cleanroom. Keeping a single
+            // registration path avoids relying on loader-specific manifest scanning.
             attributes(attribute_map)
         }
     }

@@ -52,8 +52,8 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntityMixin {
 
         MixinHooks.wasJumping = self.movementInput.jump;
 
-        var isRolling = doABarrelRoll$isRolling();
-        var rollDiff = doABarrelRoll$getRoll() - lastSentRoll;
+        boolean isRolling = doABarrelRoll$isRolling();
+        float rollDiff = doABarrelRoll$getRoll() - lastSentRoll;
         if (isRolling != lastSentIsRolling || rollDiff != 0.0f) {
             ClientNetworking.sendRollUpdate(this);
 
@@ -85,13 +85,13 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntityMixin {
 
     @Unique
     private boolean doABarrelRoll$shouldSuppressElytraDeploy() {
-        var behaviour = ModConfig.INSTANCE.getActivationBehaviour();
+        ActivationBehaviour behaviour = ModConfig.INSTANCE.getActivationBehaviour();
         if (behaviour == ActivationBehaviour.VANILLA) {
             return false;
         }
 
         // This method is only reached while airborne with jump held, so !wasJumping marks a new press.
-        var shouldCancel = behaviour == ActivationBehaviour.TRIPLE_JUMP;
+        boolean shouldCancel = behaviour == ActivationBehaviour.TRIPLE_JUMP;
         if (!MixinHooks.wasJumping) {
             MixinHooks.wasJumping = true;
             if (!MixinHooks.secondJump) {
@@ -116,14 +116,14 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntityMixin {
     public void doABarrelRoll$changeElytraLook(double pitch, double yaw, double roll, Sensitivity sensitivity, double mouseDelta) {
         EntityPlayerSP self = (EntityPlayerSP) (Object) this;
 
-        var rotDelta = RotationInstant.of(pitch, yaw, roll);
-        var currentRoll = doABarrelRoll$getRoll();
-        var currentRotation = RotationInstant.of(
+        RotationInstant rotDelta = RotationInstant.of(pitch, yaw, roll);
+        float currentRoll = doABarrelRoll$getRoll();
+        RotationInstant currentRotation = RotationInstant.of(
                 self.rotationPitch,
                 self.rotationYaw,
                 currentRoll
         );
-        var context = RollContext.of(currentRotation, rotDelta, mouseDelta);
+        RollContext context = RollContext.of(currentRotation, rotDelta, mouseDelta);
 
         context.useModifier(RotationModifiers.fixNaN("INPUT"));
         RollEvents.earlyCameraModifiers(context);
@@ -142,15 +142,15 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntityMixin {
     public void doABarrelRoll$changeElytraLook(float pitch, float yaw, float roll) {
         EntityPlayerSP self = (EntityPlayerSP) (Object) this;
 
-        var currentPitch = self.rotationPitch;
-        var currentYaw = self.rotationYaw;
-        var currentRoll = doABarrelRoll$getRoll();
+        float currentPitch = self.rotationPitch;
+        float currentYaw = self.rotationYaw;
+        float currentRoll = doABarrelRoll$getRoll();
 
         // Convert pitch, yaw, and roll to a facing and left vector
         // getLook(1.0F) == getVectorForRotation(rotationPitch, rotationYaw)
         Vec3d lookVec = self.getLook(1.0F);
-        var facing = new Vector3d(lookVec.x, lookVec.y, lookVec.z);
-        var left = new Vector3d(1, 0, 0);
+        Vector3d facing = new Vector3d(lookVec.x, lookVec.y, lookVec.z);
+        Vector3d left = new Vector3d(1, 0, 0);
         doABarrelRoll$rotate(left, 0, 0, 1, -currentRoll * MagicNumbers.TORAD);
         doABarrelRoll$rotate(left, 1, 0, 0, -currentPitch * MagicNumbers.TORAD);
         doABarrelRoll$rotate(left, 0, 1, 0, -(currentYaw + 180) * MagicNumbers.TORAD);
@@ -159,7 +159,7 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntityMixin {
         doABarrelRoll$rotate(facing, left.x, left.y, left.z, -0.15 * pitch * MagicNumbers.TORAD);
 
         // Apply yaw
-        var up = new Vector3d();
+        Vector3d up = new Vector3d();
         up.cross(facing, left);
         doABarrelRoll$rotate(facing, up.x, up.y, up.z, 0.15 * yaw * MagicNumbers.TORAD);
         doABarrelRoll$rotate(left, up.x, up.y, up.z, 0.15 * yaw * MagicNumbers.TORAD);
@@ -171,9 +171,9 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntityMixin {
         double newPitch = -Math.asin(facing.y) * MagicNumbers.TODEG;
         double newYaw = -Math.atan2(facing.x, facing.z) * MagicNumbers.TODEG;
 
-        var normalLeft = new Vector3d(1, 0, 0);
+        Vector3d normalLeft = new Vector3d(1, 0, 0);
         doABarrelRoll$rotate(normalLeft, 0, 1, 0, -(newYaw + 180) * MagicNumbers.TORAD);
-        var leftCrossNormalLeft = new Vector3d();
+        Vector3d leftCrossNormalLeft = new Vector3d();
         leftCrossNormalLeft.cross(left, normalLeft);
         double newRoll = -Math.atan2(leftCrossNormalLeft.dot(facing), left.dot(normalLeft)) * MagicNumbers.TODEG;
 
@@ -198,7 +198,7 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntityMixin {
      */
     @Unique
     private static void doABarrelRoll$rotate(Vector3d vec, double axisX, double axisY, double axisZ, double angle) {
-        var mat = new Matrix4d();
+        Matrix4d mat = new Matrix4d();
         mat.set(new AxisAngle4d(axisX, axisY, axisZ, angle));
         mat.transform(vec);
     }

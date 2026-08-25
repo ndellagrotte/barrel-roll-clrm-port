@@ -1,10 +1,16 @@
-# Do a Barrel Roll — Cleanroom 1.12.2 Port
+# Do a Barrel Roll — 1.12.2 Port
 
 Microsoft flight simulator for Minecraft elytras.
 
 This is a port of [Do a Barrel Roll](https://github.com/enjarai/do-a-barrel-roll)
-(originally by **enjarai**, GPL-3.0) to **Minecraft 1.12.2** running on the
-[Cleanroom](https://cleanroommc.com/) mod loader (Forge fork).
+(originally by **enjarai**, GPL-3.0) to **Minecraft 1.12.2**. A single jar runs on both
+**MinecraftForge 1.12.2** and the [Cleanroom](https://cleanroommc.com/) loader.
+
+## Requirements
+
+- Minecraft 1.12.2 with **MinecraftForge** (14.23.5.2860 or newer) **or Cleanroom**
+- **[MixinBooter](https://github.com/CleanroomMC/MixinBooter)** — required on MinecraftForge, where it
+  provides Mixin. Cleanroom already bundles it, so no separate download is needed there.
 
 ## Features
 
@@ -35,9 +41,15 @@ Based on the [CleanroomModTemplate](https://github.com/CleanroomMC/CleanroomModT
 ./gradlew build
 ```
 
-The built jar lands in `build/libs`. Use the Gradle `runClient`/`runServer` tasks
-(the IDEA run configurations `2. Run Client` / `3. Run Server`) to launch a dev
-instance — do not use IntelliJ's own "Minecraft Client" configuration.
+The built jar lands in `build/libs`. The build compiles against **vanilla MinecraftForge** and emits
+**Java 8 bytecode**, which is what lets one artifact load on both loaders: Forge 1.12.2 runs on a
+Java 8 JVM, and Cleanroom (Java 21+) accepts Java 8 bytecode. Keep `src/main/java` free of records,
+`var`, switch expressions, and Java 9+ APIs.
+
+Use the Gradle `runClient`/`runServer` tasks (the IDEA run configurations `2. Run Client` /
+`3. Run Server`) to launch a dev instance — do not use IntelliJ's own "Minecraft Client"
+configuration. The dev run uses Forge; to test the Cleanroom path, drop the built jar into a real
+Cleanroom instance.
 
 ## License
 

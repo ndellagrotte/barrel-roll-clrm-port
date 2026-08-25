@@ -14,7 +14,7 @@
   ],
   "server": [],
   "setSourceFile": true,
-  "minVersion": "0.8.7",
+  "minVersion": "0.8",
   "refmap": "do_a_barrel_roll.refmap.json",
   "injectors": {
     "defaultRequire": 1
