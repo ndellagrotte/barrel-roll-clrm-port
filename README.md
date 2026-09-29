@@ -28,14 +28,23 @@ reconnect for server values pushed by the server).
 
 ## Building
 
-Based on the [CleanroomModTemplate](https://github.com/CleanroomMC/CleanroomModTemplate)
-(custom Unimined fork, Gradle 9, Java 25 toolchain):
+Built with [CleanroomGradle](https://github.com/CleanroomMC/CleanroomGradle) in userdev
+mode (Gradle 9, Java 25 toolchain). The mod has no mixins or coremod; it relies on the
+loader's entity roll axis (`Entity.getRoll`/`setRoll`, synced to other clients),
+`LivingElytraDeployEvent`, and `InputEvent.MouseTurnEvent` with its frame clock.
+
+Those APIs are newer than the latest Cleanroom release, so `cleanroom_version` in
+`gradle.properties` points at a local build. Publish one from a Cleanroom checkout first:
 
 ```
+# in the Cleanroom repository
+./gradlew publishToMavenLocal
+# then set cleanroom_version to the version it printed, and in this repository
 ./gradlew build
 ```
 
-The built jar lands in `build/libs`. Use the Gradle `runClient`/`runServer` tasks
+`build/libs` then contains the SRG-named jar for players (from `reobfJar`) and the
+MCP-named `-dev` jar. Use the Gradle `runClient`/`runServer` tasks
 (the IDEA run configurations `2. Run Client` / `3. Run Server`) to launch a dev
 instance — do not use IntelliJ's own "Minecraft Client" configuration.
 

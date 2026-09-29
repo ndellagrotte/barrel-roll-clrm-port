@@ -1,19 +1,22 @@
 package io.github.ndellagrotte.doabarrelroll.net;
 
-import io.github.ndellagrotte.doabarrelroll.api.RollEntity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 
 /**
- * Client networking entry point. Phase 1 only holds the handshake state;
- * packet registration/handlers are added in Phase 2.
+ * Client networking entry point. Holds the handshake state and sends the local player's roll;
+ * config handshake packets are not implemented yet.
  */
 public class ClientNetworking {
     public static final HandshakeClient HANDSHAKE_CLIENT = new HandshakeClient();
 
     public static void init() {
-        // Phase 2: register S2C packet handlers, logout reset listener.
     }
 
-    public static void sendRollUpdate(RollEntity rollEntity) {
-        // Phase 2: send RollSyncC2SPacket to the server when connected.
+    public static void sendRollUpdate(EntityPlayerSP player, boolean rolling) {
+        if (Minecraft.getMinecraft().getConnection() == null) {
+            return;
+        }
+        ModNetworking.CHANNEL.sendToServer(new RollSyncC2SPacket(rolling, player.getRoll()));
     }
 }

@@ -9,7 +9,7 @@ import io.github.ndellagrotte.doabarrelroll.config.ModConfig;
 import io.github.ndellagrotte.doabarrelroll.flight.RotationModifiers;
 import io.github.ndellagrotte.doabarrelroll.math.Smoother;
 import io.github.ndellagrotte.doabarrelroll.net.ClientNetworking;
-import io.github.ndellagrotte.doabarrelroll.util.MixinHooks;
+import io.github.ndellagrotte.doabarrelroll.util.ElytraActivation;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
@@ -78,7 +78,7 @@ public class DoABarrelRollClient {
         if (!ClientNetworking.HANDSHAKE_CLIENT.getConfig().map(LimitedModConfigServer::forceEnabled).orElse(false)) {
             var hybrid = ModConfig.INSTANCE.getActivationBehaviour() == ActivationBehaviour.HYBRID ||
                     ModConfig.INSTANCE.getActivationBehaviour() == ActivationBehaviour.HYBRID_TOGGLE;
-            if (hybrid && !MixinHooks.thirdJump) {
+            if (hybrid && !ElytraActivation.thirdJump) {
                 return false;
             }
 

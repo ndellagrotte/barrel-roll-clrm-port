@@ -50,9 +50,9 @@ public class Smoother {
         this.actualSum += original;
         double d0 = this.actualSum - this.smoothedSum;
         // Vanilla is Mth.lerp(0.5, movementLatency, d0); see ATTACK_TAU_SECONDS for why the
-        // 0.5 is time-normalised here. renderDelta arrives clamped to [0, 0.1] by
-        // EntityRendererMixin#doABarrelRoll$beginFrame, so this stays within [0, 0.984];
-        // the max() only guards callers that bypass beginFrame.
+        // 0.5 is time-normalised here. renderDelta arrives clamped to [0, 0.1] by the loader's
+        // frame clock (ForgeHooksClient.beginFrame), so this stays within [0, 0.984];
+        // the max() only guards callers that bypass it.
         double attack = 1.0 - Math.exp(-Math.max(0.0, renderDelta) / ATTACK_TAU_SECONDS);
         double d1 = this.movementLatency + (d0 - this.movementLatency) * attack;
         double d2 = Math.signum(d0);
