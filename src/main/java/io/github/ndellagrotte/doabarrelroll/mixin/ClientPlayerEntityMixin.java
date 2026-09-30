@@ -14,7 +14,6 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketEntityAction;
-import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -146,10 +145,16 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntityMixin {
         var currentYaw = self.rotationYaw;
         var currentRoll = doABarrelRoll$getRoll();
 
-        // Convert pitch, yaw, and roll to a facing and left vector
-        // getLook(1.0F) == getVectorForRotation(rotationPitch, rotationYaw)
-        Vec3d lookVec = self.getLook(1.0F);
-        var facing = new Vector3d(lookVec.x, lookVec.y, lookVec.z);
+        // Convert pitch, yaw, and roll to a facing and left vector. This is
+        // Entity.getVectorForRotation(rotationPitch, rotationYaw) in double precision: vanilla's
+        // getLook goes through MathHelper's 65536-entry sin table, which quantises the facing to a
+        // 0.0055 degree grid. Because newPitch/newYaw below are re-derived from this vector and fed
+        // back through turn(), any per-frame delta smaller than one grid step is discarded, so slow
+        // rotations (the smoothing tail, banking, righting) stop dead above ~1.4 deg/s at 250 fps.
+        double pitchRad = currentPitch * MagicNumbers.TORAD;
+        double yawRad = currentYaw * MagicNumbers.TORAD;
+        double cosPitch = Math.cos(pitchRad);
+        var facing = new Vector3d(-Math.sin(yawRad) * cosPitch, -Math.sin(pitchRad), Math.cos(yawRad) * cosPitch);
         var left = new Vector3d(1, 0, 0);
         doABarrelRoll$rotate(left, 0, 0, 1, -currentRoll * MagicNumbers.TORAD);
         doABarrelRoll$rotate(left, 1, 0, 0, -currentPitch * MagicNumbers.TORAD);
