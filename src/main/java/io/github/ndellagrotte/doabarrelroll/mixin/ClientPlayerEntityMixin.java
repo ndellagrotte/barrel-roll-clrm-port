@@ -107,8 +107,7 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntityMixin {
     }
 
     @Override
-    @Unique
-    protected void doABarrelRoll$tickRollState() {
+    public void doABarrelRoll$tickRollState() {
         // Update rolling status
         doABarrelRoll$setRolling(RollEvents.shouldRoll());
     }

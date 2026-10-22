@@ -41,7 +41,7 @@ Two jars land in `build/libs`: `do_a_barrel_roll-<version>.jar` (SRG-named, the 
 and `do_a_barrel_roll-<version>-mcp.jar` (MCP-named, for dev environments).
 
 The version is computed from git tags by the Versioning plugin; `./gradlew -q printVersion`
-shows it. Tag `1.2.0` on `main` to release that version.
+shows it. Tag `v1.2.0` on `main` to release that version.
 
 Use the Gradle `runClient` / `runServer` tasks to launch a dev instance. The Mixin config is
 passed to dev runs through the `crl.dev.mixin` system property and shipped in the jar via the

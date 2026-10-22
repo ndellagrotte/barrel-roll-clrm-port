@@ -1,0 +1,31 @@
+category.do_a_barrel_roll.do_a_barrel_roll=Do a Barrel Roll
+category.do_a_barrel_roll.do_a_barrel_roll.movement=Do a Barrel Roll: Flight Controls
+
+key.do_a_barrel_roll.toggle_enabled=Toggle Mod
+key.do_a_barrel_roll.toggle_enabled.enable=Do a Barrel Roll enabled
+key.do_a_barrel_roll.toggle_enabled.disable=Do a Barrel Roll disabled
+key.do_a_barrel_roll.toggle_enabled.disallowed=The server requires Do a Barrel Roll to stay enabled
+key.do_a_barrel_roll.toggle_thrust=Toggle Thrust
+key.do_a_barrel_roll.toggle_thrust.enable=Thrust enabled
+key.do_a_barrel_roll.toggle_thrust.disable=Thrust disabled
+key.do_a_barrel_roll.toggle_thrust.disallowed=The server does not allow thrusting
+key.do_a_barrel_roll.open_config=Open Config
+
+key.do_a_barrel_roll.pitch_up=Pitch Up
+key.do_a_barrel_roll.pitch_down=Pitch Down
+key.do_a_barrel_roll.yaw_left=Yaw Left
+key.do_a_barrel_roll.yaw_right=Yaw Right
+key.do_a_barrel_roll.roll_left=Roll Left
+key.do_a_barrel_roll.roll_right=Roll Right
+key.do_a_barrel_roll.thrust_forward=Thrust Forward
+key.do_a_barrel_roll.thrust_backward=Thrust Backward
+
+config.do_a_barrel_roll.no_gui_notice=This version has no config screen. Edit %s in your config folder instead.
+config.do_a_barrel_roll.controls.activation_behaviour.vanilla=Vanilla
+config.do_a_barrel_roll.controls.activation_behaviour.triple_jump=Triple Jump
+config.do_a_barrel_roll.controls.activation_behaviour.hybrid=Hybrid
+config.do_a_barrel_roll.controls.activation_behaviour.hybrid_toggle=Hybrid (Toggle)
+
+toast.do_a_barrel_roll=Do a Barrel Roll
+toast.do_a_barrel_roll.thrusting_disabled_by_server=Thrusting has been disabled by the server
+toast.do_a_barrel_roll.mod_forced_enabled_by_server=The server has forced this mod to be enabled

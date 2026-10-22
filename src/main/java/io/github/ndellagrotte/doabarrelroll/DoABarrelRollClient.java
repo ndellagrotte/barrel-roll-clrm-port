@@ -11,6 +11,9 @@ import io.github.ndellagrotte.doabarrelroll.math.Smoother;
 import io.github.ndellagrotte.doabarrelroll.net.ClientNetworking;
 import io.github.ndellagrotte.doabarrelroll.util.MixinHooks;
 import net.minecraft.client.Minecraft;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class DoABarrelRollClient {
     public static final Smoother PITCH_SMOOTHER = new Smoother();
@@ -20,33 +23,49 @@ public class DoABarrelRollClient {
 
     public static void init() {
         FALL_FLYING_GROUP.trueIf(DoABarrelRollClient::isFallFlying);
-
-        // Keyboard modifiers
-        RollEvents.EARLY_CAMERA_MODIFIERS.register(context -> context
-                        .useModifier(RotationModifiers.buttonControls(1800)),
-                2000, FALL_FLYING_GROUP);
-
-        // Mouse modifiers, including swapping axes
-        RollEvents.EARLY_CAMERA_MODIFIERS.register(context -> context
-                        .useModifier(ModConfig.INSTANCE::configureRotation),
-                1000, FALL_FLYING_GROUP);
-
-        // Generic movement modifiers, banking and such
-        RollEvents.LATE_CAMERA_MODIFIERS.register(context -> context
-                        .useModifier(RotationModifiers::applyControlSurfaceEfficacy, ModConfig.INSTANCE::getSimulateControlSurfaceEfficacy)
-                        .useModifier(RotationModifiers.smoothing(
-                                PITCH_SMOOTHER, YAW_SMOOTHER, ROLL_SMOOTHER,
-                                ModConfig.INSTANCE.getSmoothing()
-                        ))
-                        .useModifier(RotationModifiers::banking, ModConfig.INSTANCE::getEnableBanking)
-                        .useModifier(RotationModifiers::reorient, ModConfig.INSTANCE::getAutomaticRighting),
-                1000, FALL_FLYING_GROUP);
-
-        ClientEvents.SERVER_CONFIG_UPDATE.register(ModConfig.INSTANCE::notifyPlayerOfServerConfig);
+        MinecraftForge.EVENT_BUS.register(new DoABarrelRollClient());
 
         ModConfig.touch();
 
         ClientNetworking.init();
+    }
+
+    /**
+     * The old event implementation sorted lower numeric priorities first, so the mouse modifier
+     * runs before the keyboard modifier. Forge priorities preserve that ordering explicitly.
+     */
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onEarlyMouseModifiers(RollEvents.EarlyCameraModifiersEvent event) {
+        if (FALL_FLYING_GROUP.get()) {
+            event.getContext().useModifier(ModConfig.INSTANCE::configureRotation);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public void onEarlyKeyboardModifiers(RollEvents.EarlyCameraModifiersEvent event) {
+        if (FALL_FLYING_GROUP.get()) {
+            event.getContext().useModifier(RotationModifiers.buttonControls(1800));
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onLateCameraModifiers(RollEvents.LateCameraModifiersEvent event) {
+        if (FALL_FLYING_GROUP.get()) {
+            event.getContext()
+                    .useModifier(RotationModifiers::applyControlSurfaceEfficacy,
+                            ModConfig.INSTANCE::getSimulateControlSurfaceEfficacy)
+                    .useModifier(RotationModifiers.smoothing(
+                            PITCH_SMOOTHER, YAW_SMOOTHER, ROLL_SMOOTHER,
+                            ModConfig.INSTANCE.getSmoothing()
+                    ))
+                    .useModifier(RotationModifiers::banking, ModConfig.INSTANCE::getEnableBanking)
+                    .useModifier(RotationModifiers::reorient, ModConfig.INSTANCE::getAutomaticRighting);
+        }
+    }
+
+    @SubscribeEvent
+    public void onServerConfigUpdate(ClientEvents.ServerConfigUpdateEvent event) {
+        ModConfig.INSTANCE.notifyPlayerOfServerConfig(event.getConfig());
     }
 
     public static void clearValues() {

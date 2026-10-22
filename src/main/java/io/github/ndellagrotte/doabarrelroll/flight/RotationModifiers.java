@@ -49,11 +49,14 @@ public class RotationModifiers {
     }
 
     public static RollContext.ConfiguresRotation smoothing(Smoother pitchSmoother, Smoother yawSmoother, Smoother rollSmoother, Sensitivity smoothness) {
-        return (rotationInstant, context) -> RotationInstant.of(
-                smoothness.pitch == 0 ? rotationInstant.pitch() : pitchSmoother.smooth(rotationInstant.pitch(), 1 / smoothness.pitch * context.getRenderDelta()),
-                smoothness.yaw == 0 ? rotationInstant.yaw() : yawSmoother.smooth(rotationInstant.yaw(), 1 / smoothness.yaw * context.getRenderDelta()),
-                smoothness.roll == 0 ? rotationInstant.roll() : rollSmoother.smooth(rotationInstant.roll(), 1 / smoothness.roll * context.getRenderDelta())
-        );
+        return (rotationInstant, context) -> {
+            var delta = context.getRenderDelta();
+            return RotationInstant.of(
+                    smoothness.pitch == 0 ? rotationInstant.pitch() : pitchSmoother.smooth(rotationInstant.pitch(), 1 / smoothness.pitch * delta, delta),
+                    smoothness.yaw == 0 ? rotationInstant.yaw() : yawSmoother.smooth(rotationInstant.yaw(), 1 / smoothness.yaw * delta, delta),
+                    smoothness.roll == 0 ? rotationInstant.roll() : rollSmoother.smooth(rotationInstant.roll(), 1 / smoothness.roll * delta, delta)
+            );
+        };
     }
 
     public static RotationInstant banking(RotationInstant rotationInstant, RollContext context) {

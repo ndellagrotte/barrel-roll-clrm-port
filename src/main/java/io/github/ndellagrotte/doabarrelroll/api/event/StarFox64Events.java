@@ -1,18 +1,33 @@
 package io.github.ndellagrotte.doabarrelroll.api.event;
 
 import net.minecraft.client.entity.EntityPlayerSP;
-import io.github.ndellagrotte.doabarrelroll.impl.event.EventImpl;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.eventhandler.Event;
 
-public interface StarFox64Events {
-    Event<DoesABarrelRollEvent> DOES_A_BARREL_ROLL = new EventImpl<>();
-
-    static void doesABarrelRoll(EntityPlayerSP player) {
-        for (var listener : DOES_A_BARREL_ROLL.getListeners()) {
-            listener.onBarrelRoll(player);
-        }
+public final class StarFox64Events {
+    private StarFox64Events() {
     }
 
-    interface DoesABarrelRollEvent {
-        void onBarrelRoll(EntityPlayerSP player);
+    public static void doesABarrelRoll(EntityPlayerSP player) {
+        MinecraftForge.EVENT_BUS.post(new DoesABarrelRollEvent(player));
+    }
+
+    public static final class DoesABarrelRollEvent extends Event {
+        private final EntityPlayerSP player;
+
+        /**
+         * Used by Forge 1.12.2 while discovering subscribers.
+         */
+        public DoesABarrelRollEvent() {
+            this(null);
+        }
+
+        public DoesABarrelRollEvent(EntityPlayerSP player) {
+            this.player = player;
+        }
+
+        public EntityPlayerSP getPlayer() {
+            return player;
+        }
     }
 }
