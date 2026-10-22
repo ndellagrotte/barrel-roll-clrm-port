@@ -1,44 +1,39 @@
-package io.github.ndellagrotte.doabarrelroll.mixin;
+package io.github.ndellagrotte.doabarrelroll;
 
+import com.cleanroommc.client.input.mouse.MouseTurnEvent;
 import io.github.ndellagrotte.doabarrelroll.api.RollEntity;
 import io.github.ndellagrotte.doabarrelroll.api.RollMouse;
 import io.github.ndellagrotte.doabarrelroll.config.ModConfig;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.renderer.EntityRenderer;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.vecmath.Vector2d;
 
 /**
- * Replaces the upstream MouseMixin: in 1.12.2 the mouse look is applied by
- * {@code EntityRenderer.updateCameraAndRender} calling {@code EntityPlayerSP.turn}.
- * Redirecting that call lets us substitute the roll flight pipeline while gliding.
+ * Replaces the upstream MouseMixin. Cleanroom fires {@link MouseTurnEvent} from
+ * {@code EntityRenderer.updateCameraAndRender} with the exact yaw/pitch it is about to hand to
+ * {@code EntityPlayerSP.turn}; cancelling the event lets us substitute the roll flight pipeline
+ * while gliding.
  */
-@Mixin(EntityRenderer.class)
-public abstract class EntityRendererMixin implements RollMouse {
-    @Unique
-    private final Vector2d mouseTurnVec = new Vector2d();
-    @Unique
-    private long lastFrameNanos = -1;
-    @Unique
-    private double doABarrelRoll$frameDelta = 1.0 / 60.0;
+@SideOnly(Side.CLIENT)
+public final class RollMouseHandler implements RollMouse {
+    public static final RollMouseHandler INSTANCE = new RollMouseHandler();
 
-    @Redirect(
-            method = "updateCameraAndRender",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/entity/EntityPlayerSP;turn(FF)V"
-            )
-    )
-    private void doABarrelRoll$redirectPlayerTurn(EntityPlayerSP player, float yaw, float pitch) {
+    private final Vector2d mouseTurnVec = new Vector2d();
+    private long lastFrameNanos = -1;
+    private double frameDelta = 1.0 / 60.0;
+
+    private RollMouseHandler() {}
+
+    @SubscribeEvent
+    public void onMouseTurn(MouseTurnEvent event) {
         // Reuses the delta computed by beginFrame() earlier this frame rather than advancing the
         // clock here, so the idle pump and the mouse input for a frame share one time slice -
         // exactly how upstream's Mouse.tick hands the same GLFW delta to both of its calls.
-        if (!doABarrelRoll$updateMouse(player, yaw, pitch, doABarrelRoll$frameDelta)) {
-            player.turn(yaw, pitch);
+        if (doABarrelRoll$updateMouse(event.getPlayer(), event.getYaw(), event.getPitch(), frameDelta)) {
+            event.setCanceled(true);
         }
     }
 
@@ -54,8 +49,8 @@ public abstract class EntityRendererMixin implements RollMouse {
         long now = System.nanoTime();
         double delta = lastFrameNanos < 0 ? 1.0 / 60.0 : (now - lastFrameNanos) / 1_000_000_000.0;
         lastFrameNanos = now;
-        doABarrelRoll$frameDelta = Math.max(0.0, Math.min(delta, 0.1));
-        return doABarrelRoll$frameDelta;
+        frameDelta = Math.max(0.0, Math.min(delta, 0.1));
+        return frameDelta;
     }
 
     @Override

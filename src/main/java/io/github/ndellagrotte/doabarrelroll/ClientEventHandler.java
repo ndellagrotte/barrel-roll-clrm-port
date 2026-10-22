@@ -34,8 +34,8 @@ public class ClientEventHandler {
      * Keeps the mouse pipeline (momentum mode plus the input-independent modifiers like banking and
      * righting) running even when the mouse isn't moving. This is the upstream Mouse.tick
      * maintainMouseMomentum hook: it runs once per rendered frame, immediately before
-     * EntityRenderer.updateCameraAndRender applies the frame's mouse look, and shares that frame's
-     * delta with it. Driving it per frame rather than per client tick matters - a per-tick pump
+     * EntityRenderer.updateCameraAndRender fires MouseTurnEvent for the frame's mouse look, and
+     * shares that frame's delta with it. Driving it per frame rather than per client tick matters - a per-tick pump
      * lands on an irregular subset of frames (Minecraft.runGameLoop runs 0..10 ticks inside a
      * frame), and since roll/prevRoll and rotation/prevRotation are advanced together the lump
      * reaches the camera unsmoothed, which reads as judder at tick rate whenever banking is
@@ -47,7 +47,7 @@ public class ClientEventHandler {
             return;
         }
         Minecraft mc = Minecraft.getMinecraft();
-        RollMouse mouse = (RollMouse) mc.entityRenderer;
+        RollMouse mouse = RollMouseHandler.INSTANCE;
 
         // Advance the frame clock unconditionally so it can't accumulate while there is no player.
         double frameDelta = mouse.doABarrelRoll$beginFrame();
